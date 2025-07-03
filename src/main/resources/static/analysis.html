@@ -1,0 +1,180 @@
+<!-- analysis.html - Protein Tracker 분석 화면 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로틴 분석</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .scrollbar-hidden::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<div class="relative bg-white w-full max-w-sm rounded-[40px] px-6 pt-10 pb-6 shadow-md flex flex-col" style="height: 700px;">
+    <div class="overflow-y-auto pb-24 scrollbar scrollbar-hidden pl-2">
+        <h2 class="text-blue-500 text-xl font-semibold mb-4">프로틴 분석</h2>
+
+        <!-- 요약 정보 -->
+        <div class="bg-blue-50 p-4 rounded-md mb-2">
+            <p class="text-sm text-blue-800">이번 주 목표: <span class="font-bold">120g</span></p>
+            <p class="text-sm text-blue-800">현재까지 섭취량: <span class="font-bold" id="currentTotal">0g</span></p>
+        </div>
+
+        <!-- 목표 달성률 -->
+        <div class="mb-4">
+            <div class="text-sm text-gray-700 mb-1 font-medium">🎯 목표 달성률</div>
+            <div class="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div id="progressBar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-500" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- 기준 선택 -->
+        <div class="flex justify-end mb-2">
+            <select id="periodSelect" class="border rounded px-2 py-1 text-sm">
+                <option value="week">이번 주</option>
+                <option value="month">이번 달</option>
+                <option value="year">이번 해</option>
+            </select>
+        </div>
+
+        <!-- 차트 -->
+        <canvas id="proteinChart" height="200"></canvas>
+
+        <!-- 평균 텍스트 -->
+        <div class="text-center mt-6">
+            <p id="averageTitle" class="text-blue-500 font-semibold mb-1">일 평균</p>
+            <div class="bg-gray-200 text-2xl font-bold text-gray-700 py-3 rounded-md"> <span id="avgValue">0g</span></div>
+            <p id="adviceMsg" class="text-sm text-blue-400 mt-2">이번 주 섭취량이 부족해요.<br/>조금 더 힘내 보세요!</p>
+        </div>
+
+        <!-- 비교 문구 -->
+        <p id="compareLast" class="text-xs text-gray-500 text-center mt-2">지난 주보다 +10g 많아요!</p>
+    </div>
+
+    <!-- 고정 하단 네비게이션 -->
+    <nav class="absolute bottom-0 left-0 w-full bg-white border-t flex justify-around text-sm text-gray-400 py-3 rounded-b-[40px]">
+        <a href="/main.html" class="text-center">
+            <div>🏠<br />Home</div>
+        </a>
+        <a href="/history.html" class="text-center">
+            <div>📄<br />History</div>
+        </a>
+        <a href="/analysis.html" class="text-center text-black">
+            <div>📊<br />Analysis</div>
+        </a>
+        <a href="/profile.html" class="text-center">
+            <div>👤<br />Profile</div>
+        </a>
+    </nav>
+</div>
+
+<script>
+    function getWeeklyRangesForMonth(year, month) {
+        const weeks = [];
+        let start = new Date(year, month, 1);
+        while (start.getDay() !== 1) start.setDate(start.getDate() - 1); // 월요일 시작
+        while (start.getMonth() <= month || (start.getMonth() === 0 && month === 11)) {
+            const end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            weeks.push({
+                label: `${start.getMonth() + 1}.${start.getDate()}~${end.getMonth() + 1}.${end.getDate()}`,
+                total: Math.floor(Math.random() * 600) + 300
+            });
+            start.setDate(start.getDate() + 7);
+        }
+        return weeks;
+    }
+
+    const chartData = {
+        week: [50, 70, 60, 55, 80, 40, 65],
+        month: getWeeklyRangesForMonth(2025, 6),
+        year: Array.from({ length: 12 }, () => Math.floor(Math.random() * 1800) + 300),
+    };
+
+    const ctx = document.getElementById('proteinChart').getContext('2d');
+    const proteinChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '섭취량',
+                data: [],
+                backgroundColor: '#93c5fd',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    function updateChart(period) {
+        let data = chartData[period];
+        let labels = [];
+        let values = [];
+
+        if (period === 'month') {
+            labels = data.map(d => d.label);
+            values = data.map(d => d.total);
+        } else {
+            labels =
+                period === 'week' ? ['월','화','수','목','금','토','일'] :
+                    Array.from({ length: 12 }, (_, i) => `${i + 1}월`);
+            values = data;
+        }
+
+        proteinChart.data.labels = labels;
+        proteinChart.data.datasets[0].data = values;
+        proteinChart.update();
+
+        const total = values.reduce((a,b) => a + b, 0);
+        const avg = Math.round(total / values.length);
+        document.getElementById('avgValue').textContent = `${avg}g`;
+        document.getElementById('averageTitle').textContent =
+            period === 'week' ? '일 평균' :
+                period === 'month' ? '주 평균' : '월 평균';
+        document.getElementById('currentTotal').textContent = `${total}g`;
+
+        const goal = 120 * (period === 'week' ? 1 : period === 'month' ? 4 : 52);
+        const percent = Math.min((total / goal) * 100, 100);
+        document.getElementById('progressBar').style.width = `${percent}%`;
+
+        let msg = '';
+        if (avg < 60) msg = '🥲 단백질이 부족해요! 오늘 좀 더 신경 써봐요.';
+        else if (avg < 100) msg = '💪 잘하고 있어요! 이대로 유지해봐요.';
+        else msg = '🔥 완벽해요! 근성장 기대해도 좋아요.';
+        document.getElementById('adviceMsg').textContent = msg;
+
+        document.getElementById('compareLast').textContent =
+            period === 'week' ? '지난 주보다 +10g 많아요!' :
+                period === 'month' ? '지난 달보다 +120g 많아요!' :
+                    '지난 해보다 +300g 많아요!';
+    }
+
+    document.getElementById('periodSelect').addEventListener('change', (e) => {
+        updateChart(e.target.value);
+    });
+
+    updateChart('week');
+</script>
+</body>
+</html>

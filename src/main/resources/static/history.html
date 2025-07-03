@@ -1,0 +1,157 @@
+<!-- history.html - Protein Tracker 히스토리 화면 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>프로틴 히스토리</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <style>
+    .fc-daygrid-day.fc-day-today {
+      background-color: #dbeafe !important;
+      border-radius: 10px;
+    }
+    .fc-daygrid-day.goal-day {
+      background-color: #bfdbfe !important;
+      font-weight: bold;
+      border-radius: 10px;
+    }
+    .scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 10px;
+    }
+    .scrollbar-hidden::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hidden {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<div class="relative bg-white w-full max-w-sm rounded-[40px] px-6 pt-10 pb-6 shadow-md flex flex-col" style="height: 700px;">
+  <div class="overflow-y-auto pb-20 scrollbar scrollbar-hidden pl-2">
+    <h2 class="text-blue-500 text-xl font-semibold mb-4">프로틴 히스토리</h2>
+
+    <!-- 달력 표시 -->
+    <div id="calendar" class="mb-4 rounded-lg overflow-hidden border"></div>
+    <p class="text-sm text-gray-500 text-center mb-4">이 달의 목표 달성일: <span class="font-medium text-gray-700">5일</span></p>
+
+    <!-- 히스토리 리스트 -->
+    <div class="mt-4">
+      <h3 id="historyDate" class="text-blue-500 font-semibold mb-2">2024.10.07의 히스토리</h3>
+      <div class="space-y-2" id="historyList">
+        <!-- 아이템이 동적으로 삽입될 영역 -->
+      </div>
+    </div>
+
+    <!-- 항목 추가 폼 -->
+    <div class="mt-6">
+      <form id="historyForm" class="rounded-md border px-4 py-3 bg-gray-50">
+        <div class="flex items-end gap-2">
+          <div class="flex-1">
+            <label for="historyName" class="block text-xs text-gray-500 mb-1">이름</label>
+            <input type="text" id="historyName" placeholder="예: 단백질 바" required class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" />
+          </div>
+          <div class="w-24">
+            <label for="historyAmount" class="block text-xs text-gray-500 mb-1">섭취량 (g)</label>
+            <input type="number" id="historyAmount" placeholder="20" required class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" />
+          </div>
+          <div>
+            <button type="submit" class="px-3 py-1.5 rounded-md bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition">추가</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 고정 하단 네비게이션 -->
+  <nav class="absolute bottom-0 left-0 w-full bg-white border-t flex justify-around text-sm text-gray-400 py-3 rounded-b-[40px]">
+    <a href="/main.html" class="text-center">
+      <div>🏠<br />Home</div>
+    </a>
+    <a href="#" class="text-center text-black">
+      <div>📄<br />History</div>
+    </a>
+    <a href="/analysis.html" class="text-center">
+      <div>📊<br />Analysis</div>
+    </a>
+    <a href="/profile.html" class="text-center">
+      <div>👤<br />Profile</div>
+    </a>
+  </nav>
+</div>
+
+<script>
+  const goalDates = ['2025-07-01', '2025-07-04', '2025-07-06', '2025-07-10', '2025-07-12'];
+
+  const proteinData = {
+    '2025-07-03': [
+      { name: '닭가슴살', amount: 30 },
+      { name: '단백질바', amount: 20 },
+      { name: '닭가슴살', amount: 30 },
+      { name: '단백질바', amount: 20 },
+      { name: '닭가슴살', amount: 30 },
+      { name: '단백질바', amount: 20 },
+      { name: '닭가슴살', amount: 30 },
+      { name: '단백질바', amount: 20 },
+    ],
+    '2025-07-08': [
+      { name: '쉐이크', amount: 25 }
+    ]
+  };
+
+  function renderHistory(date) {
+    const list = document.getElementById('historyList');
+    const title = document.getElementById('historyDate');
+    title.innerText = `${date}의 히스토리`;
+    list.innerHTML = '';
+    (proteinData[date] || []).forEach(item => {
+      list.innerHTML += `
+        <div class="flex items-center justify-between px-4 py-2 rounded-md bg-gray-50 border">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-2">
+              <p class="text-sm font-medium text-gray-800 truncate">${item.name}</p>
+              <span class="text-xs text-gray-500 whitespace-nowrap">${item.amount}g</span>
+            </div>
+            <div class="flex gap-2 text-lg text-gray-700">
+              <button title="수정" class="hover:opacity-70">✏️</button>
+              <button title="삭제" class="hover:opacity-70">🗑️</button>
+            </div>
+          </div>
+        </div>`;
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'ko',
+      height: 350,
+      headerToolbar: false,
+      selectable: true,
+      dateClick: function (info) {
+        renderHistory(info.dateStr);
+      },
+      dayCellDidMount: function (arg) {
+        if (goalDates.includes(arg.date.toISOString().slice(0, 10))) {
+          arg.el.classList.add('goal-day');
+        }
+      }
+    });
+    calendar.render();
+    renderHistory('2024-10-07');
+  });
+</script>
+</body>
+</html>
