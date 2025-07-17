@@ -1,5 +1,21 @@
+html {
+    height: 100%;
+}
+
 body {
     font-family: "Pretendard", sans-serif;
+}
+
+@layer utilities {
+    .h-mobile-full {
+        height: 100svh;
+    }
+
+    @media (min-width: 768px) {
+        .h-mobile-full {
+            height: 700px;
+        }
+    }
 }
 
 /* 스크롤바 스타일 */
