@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout-plain-center}"
+      th:with="pageTitle='회원가입 완료'"
+>
+<th:block layout:fragment="content">
+  <h1 class="text-3xl font-semibold text-black mb-6">🎉 가입을 축하합니다!</h1>
+  <p class="text-gray-600 text-sm mb-8">Protein Tracker의 여정이 지금 시작됩니다.</p>
+  <a
+          href="/login"
+          class="block w-full py-3 rounded-full bg-blue-400 text-white font-semibold hover:bg-blue-500 transition"
+  >
+    로그인하러 가기
+  </a>
+</th:block>
+</html>

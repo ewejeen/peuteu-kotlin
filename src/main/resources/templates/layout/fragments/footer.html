@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="footer"
+     class="absolute bottom-0 left-0 w-full bg-white border-t flex justify-around text-sm text-gray-400 py-3 rounded-b-[40px]">
+
+    <a class="text-center" th:href="@{/}"
+       th:classappend="${activePage == 'main'} ? ' text-black' : ''">🏠<br />Home</a>
+
+    <a class="text-center" th:href="@{/history}"
+       th:classappend="${activePage == 'history'} ? ' text-black' : ''">📄<br />History</a>
+
+    <a class="text-center" th:href="@{/analysis}"
+       th:classappend="${activePage == 'analysis'} ? ' text-black' : ''">📊<br />Analysis</a>
+
+    <a class="text-center" th:href="@{/profile}"
+       th:classappend="${activePage == 'profile'} ? ' text-black' : ''">👤<br />Profile</a>
+</nav>
+</html>

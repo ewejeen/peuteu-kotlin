@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout-plain}"
+      th:with="pageTitle='개인 정보 수정'"
+>
+<th:block layout:fragment="content">
+    <h2 class="page-title">개인 정보 수정</h2>
+
+    <!-- 아이디 (수정 불가) -->
+    <div class="mb-4">
+        <label class="block text-sm text-gray-600 mb-1">아이디 (이메일)</label>
+        <p id="userEmail" class="text-sm text-gray-800">이메일 불러오는 중...</p>
+    </div>
+
+    <!-- 닉네임 -->
+    <div class="mb-4 flex items-center gap-2">
+        <div class="flex-1">
+            <label class="block text-sm text-gray-600 mb-1">닉네임<span class="text-red-500 ml-0.5">*</span></label>
+            <input type="text" id="nickname" disabled class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm" />
+        </div>
+        <button id="editNickname" class="mt-6 text-sm text-blue-500 hover:underline">수정</button>
+        <button id="checkNickname" class="mt-6 text-sm text-gray-500 border px-2 py-1 rounded hidden">확인</button>
+    </div>
+
+    <!-- 성별 (선택) -->
+    <div class="mb-4">
+        <label class="block text-sm text-gray-600 mb-1">성별</label>
+        <select id="gender" class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="">선택안함</option>
+            <option value="male">남</option>
+            <option value="female">여</option>
+        </select>
+    </div>
+
+    <!-- 키 (선택) -->
+    <div class="mb-4">
+        <label class="block text-sm text-gray-600 mb-1">키 (cm)</label>
+        <input type="number" id="height" placeholder="선택안함" class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm" />
+    </div>
+
+    <!-- 몸무게 (선택) -->
+    <div class="mb-4">
+        <label class="block text-sm text-gray-600 mb-1">몸무게 (kg)</label>
+        <input type="number" id="weight" placeholder="선택안함" class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm" />
+    </div>
+
+    <!-- 단백질 섭취 목적 (선택) -->
+    <div class="mb-6">
+        <label class="block text-sm text-gray-600 mb-1">단백질 섭취 목적</label>
+        <select id="goal" class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="">선택안함</option>
+            <option value="muscle">근육량 증가</option>
+            <option value="health">건강</option>
+        </select>
+    </div>
+
+    <!-- 비밀번호 변경 카드 (선택) -->
+    <div class="mb-6 border rounded-lg p-4 bg-gray-50">
+        <p class="text-sm font-semibold text-gray-700 mb-2">비밀번호 변경</p>
+        <div class="mb-3">
+            <label class="block text-sm text-gray-600 mb-1">새 비밀번호</label>
+            <input type="password" id="password" placeholder="새 비밀번호 입력" class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm" />
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">비밀번호 확인</label>
+            <input type="password" id="confirmPassword" placeholder="비밀번호 재입력" class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm" />
+        </div>
+    </div>
+
+    <!-- 저장 버튼 -->
+    <button id="saveBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-md transition shadow-md">
+        저장
+    </button>
+</th:block>
+
+<script layout:fragment="script">
+    // 사용자 정보 불러오기 (더미)
+    const userData = {
+        email: "yoojinkim24@gmail.com",
+        nickname: "유진짱",
+        gender: "female",
+        height: 168,
+        weight: 64.7,
+        goal: "muscle"
+    };
+
+    window.onload = () => {
+        document.getElementById('userEmail').innerText = userData.email;
+        document.getElementById('nickname').value = userData.nickname;
+        if (userData.gender) document.getElementById('gender').value = userData.gender;
+        if (userData.height) document.getElementById('height').value = userData.height;
+        if (userData.weight) document.getElementById('weight').value = userData.weight;
+        if (userData.goal) document.getElementById('goal').value = userData.goal;
+    };
+
+    // 닉네임 수정 모드 전환
+    document.getElementById("editNickname").addEventListener("click", () => {
+        const input = document.getElementById("nickname");
+        input.disabled = false;
+        input.focus();
+        document.getElementById("editNickname").classList.add("hidden");
+        document.getElementById("checkNickname").classList.remove("hidden");
+    });
+
+    // 닉네임 중복 확인 (예시 로직)
+    document.getElementById("checkNickname").addEventListener("click", () => {
+        const input = document.getElementById("nickname").value.trim();
+        if (input === "") {
+            alert("닉네임을 입력해 주세요");
+            return;
+        }
+        // 중복 검사 로직 예시
+        if (input === "admin") {
+            alert("이미 사용 중인 닉네임입니다");
+        } else {
+            alert("사용 가능한 닉네임입니다");
+            document.getElementById("nickname").disabled = true;
+            document.getElementById("editNickname").classList.remove("hidden");
+            document.getElementById("checkNickname").classList.add("hidden");
+        }
+    });
+</script>
+</html>

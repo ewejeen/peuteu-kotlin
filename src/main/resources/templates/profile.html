@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      th:with="pageTitle='설정', activePage='profile'"
+>
+<head layout:fragment="head">
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        input:checked + .slider:before {
+            transform: translateX(18px);
+        }
+    </style>
+</head>
+
+<th:block layout:fragment="content">
+    <h2 class="page-title">설정</h2>
+
+    <!-- 일일 섭취량 설정 (폼 형식) -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-700">일 단백질 섭취량</label>
+            <div class="flex items-center gap-2">
+                <label for="autoCalc" class="text-sm text-gray-500">자동계산</label>
+                <input type="checkbox" id="autoCalc" class="accent-blue-500" onchange="toggleProteinInput()">
+            </div>
+        </div>
+        <div class="flex gap-2 mb-1">
+            <input type="number" id="proteinTarget" placeholder="예: 120" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm disabled:bg-gray-100" disabled />
+            <span class="self-center text-sm text-gray-500">g</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1" id="proteinHint">※ 개인정보(키, 몸무게, 섭취 목적)를 기반으로 자동 계산됩니다. 직접 수정할 수 없습니다. (자동계산이 켜진 경우에만)</p>
+    </div>
+
+    <!-- 섭취 알림 설정 (폼 형식) -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-700">섭취 알림</label>
+            <label class="switch">
+                <input type="checkbox" id="alarmToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="flex gap-4">
+            <div class="relative w-full">
+                <input type="number" min="0" max="23" class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm" placeholder="8" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">시</span>
+            </div>
+            <div class="relative w-full">
+                <input type="number" min="0" max="59" class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm" placeholder="00" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">분</span>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">지정한 시간에 섭취 알림이 울려요 💧</p>
+    </div>
+
+    <!-- 저장 버튼 -->
+    <div class="mb-4">
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-md transition shadow-md">변경 내용 저장하기</button>
+    </div>
+
+    <!-- 개인정보 카드형 버튼 -->
+    <div class="mb-2">
+        <a href="/profile-password-check" class="block px-4 py-3 rounded-md border border-gray-300 bg-gray-50 hover:bg-blue-50 transition cursor-pointer">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm font-medium text-gray-700">개인정보 수정</p>
+                    <p class="text-xs text-gray-500">이름, 키, 몸무게, 섭취 목적 등을 변경할 수 있어요</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-blue-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </div>
+        </a>
+    </div>
+</th:block>
+
+<script layout:fragment="script">
+    toggleProteinInput();
+
+    function toggleProteinInput() {
+        const checkbox = document.getElementById('autoCalc');
+        const input = document.getElementById('proteinTarget');
+        const hint = document.getElementById('proteinHint');
+        input.disabled = checkbox.checked;
+        hint.innerText = checkbox.checked
+            ? '※ 개인정보(키, 몸무게, 섭취 목적)를 기반으로 자동 계산됩니다. 직접 수정할 수 없습니다.'
+            : '※ 직접 원하는 단백질 섭취량을 입력할 수 있습니다.';
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const hourInput = document.querySelector('input[type="number"][min="0"][max="23"]');
+        const minuteInput = document.querySelector('input[type="number"][min="0"][max="59"]');
+
+        [hourInput, minuteInput].forEach(input => {
+            input.addEventListener("input", () => {
+                const min = parseInt(input.getAttribute("min"), 10);
+                const max = parseInt(input.getAttribute("max"), 10);
+                const val = parseInt(input.value, 10);
+
+                if (isNaN(val)) return;
+
+                if (val < min) input.value = min;
+                if (val > max) input.value = max;
+            });
+        });
+    });
+
+</script>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head th:fragment="header">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="|${pageTitle != null ? pageTitle : 'Peuteu'} - Protein Tracker|"></title>
+
+    <!-- Tailwind-->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 공통 스타일 -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- 페이지 전용 head -->
+    <th:block layout:fragment="head" />
+</head>
+</html>

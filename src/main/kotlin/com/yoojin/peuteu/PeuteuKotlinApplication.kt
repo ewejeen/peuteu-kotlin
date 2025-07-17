@@ -1,4 +1,4 @@
-package com.yoojin.peuteukotlin
+package com.yoojin.peuteu
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

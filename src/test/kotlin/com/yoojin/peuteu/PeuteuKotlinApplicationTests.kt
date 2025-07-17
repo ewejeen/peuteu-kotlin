@@ -1,4 +1,4 @@
-package com.yoojin.peuteukotlin
+package com.yoojin.peuteu
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

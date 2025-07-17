@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      th:with="pageTitle='오늘의 프로틴', activePage='main'"
+>
+
+<th:block layout:fragment="content">
+  <h2 class="page-title mb-1">오늘의 프로틴</h2>
+  <p class="text-lg font-bold text-black mb-6" id="todayText">2024.10.06</p>
+
+  <!-- 섭취량 원형 시각화 -->
+  <div class="flex flex-col items-center mb-6">
+    <div class="relative w-40 h-40">
+      <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" stroke="#E5E7EB" stroke-width="10" fill="none" />
+        <circle
+            id="progressCircle"
+            cx="50" cy="50" r="45"
+            stroke="#60A5FA"
+            stroke-width="10"
+            fill="none"
+            stroke-linecap="round"
+            stroke-dasharray="282.6"
+            stroke-dashoffset="282.6"
+            style="transition: stroke-dashoffset 1s ease-out"
+        />
+      </svg>
+
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <p id="currentText" class="text-2xl font-bold text-blue-600">10g</p>
+        <p class="text-sm text-gray-400">/120g</p>
+      </div>
+    </div>
+    <p id="remainText" class="text-sm text-gray-500 mt-2">110g 남았어요!</p>
+  </div>
+
+  <!-- 단백질 등록 -->
+  <div class="mt-6">
+    <h3 class="text-blue-500 font-semibold mb-2">프로틴 등록</h3>
+    <form id="proteinForm" class="protein-submit-form">
+      <div class="flex items-end gap-2">
+        <div class="flex-1">
+          <label for="name" class="label-submit">이름</label>
+          <input type="text" name="name" id="name" placeholder="예: 단백질 쉐이크" required />
+        </div>
+        <div class="w-24">
+          <label for="amount" class="label-submit">섭취량 (g)</label>
+          <input type="number" name="amount" id="amount" placeholder="30" required />
+        </div>
+        <div>
+          <button type="submit" class="btn-submit hover:bg-blue-600 transition">
+            등록
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="space-y-2 mt-6 protein-list" id="proteinList">
+    <!-- 일반 아이템 -->
+    <div class="protein-item">
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-medium text-gray-800 truncate">단백질쉐이크</p>
+        <span class="text-xs text-gray-500 whitespace-nowrap">25g</span>
+      </div>
+      <div class="flex gap-2 text-lg text-gray-700">
+        <button title="수정" class="hover:opacity-70">✏️</button>
+        <button title="삭제" class="hover:opacity-70">🗑️</button>
+      </div>
+    </div>
+    <div class="protein-item">
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-medium text-gray-800 truncate">단백질쉐이크</p>
+        <span class="text-xs text-gray-500 whitespace-nowrap">25g</span>
+      </div>
+      <div class="flex gap-2 text-lg text-gray-700">
+        <button title="수정" class="hover:opacity-70">✏️</button>
+        <button title="삭제" class="hover:opacity-70">🗑️</button>
+      </div>
+    </div>
+    <div class="protein-item">
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-medium text-gray-800 truncate">단백질쉐이크</p>
+        <span class="text-xs text-gray-500 whitespace-nowrap">25g</span>
+      </div>
+      <div class="flex gap-2 text-lg text-gray-700">
+        <button title="수정" class="hover:opacity-70">✏️</button>
+        <button title="삭제" class="hover:opacity-70">🗑️</button>
+      </div>
+    </div>
+
+
+    <!-- 수정중인 아이템 (슬림화) -->
+    <div class="protein-item items-end gap-2">
+        <input type="text" value="닭가슴살" placeholder="이름" class="flex-1" />
+        <input type="number" value="30" placeholder="섭취량" class="flex-1" />
+        <div class="flex gap-2 text-lg">
+          <button title="확인" class="hover:opacity-80">✅</button>
+          <button title="취소" class="hover:opacity-80">❌</button>
+        </div>
+    </div>
+  </div>
+</th:block>
+
+<script layout:fragment="script">
+  const goal = 120;
+  const current = 10;
+
+  const proteinList = [
+      { id: 1, name: "단백질쉐이크", amount: 30 },
+      { id: 2, name: "닭가슴살", amount: 25 },
+  ];
+
+  function renderList() {
+      const listEl = document.getElementById("proteinList");
+      listEl.innerHTML = ""; // 기존 내용 초기화
+
+      proteinList.forEach((item) => {
+          const itemHTML = `
+            <div class="protein-item" data-id="${item.id}">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-medium text-gray-800 truncate">${item.name}</p>
+                <span class="text-xs text-gray-500 whitespace-nowrap">${item.amount}g</span>
+              </div>
+              <div class="flex gap-2 text-lg text-gray-700">
+                <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${item.id})">✏️</button>
+                <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${item.id})">🗑️</button>
+              </div>
+            </div>
+          `;
+          listEl.insertAdjacentHTML("beforeend", itemHTML);
+      });
+  }
+
+  function updateProgress(currentValue) {
+    const percent = Math.min((currentValue / goal) * 100, 100);
+    const circleLength = 2 * Math.PI * 45;
+    const offset = circleLength * (1 - percent / 100);
+
+    const circle = document.getElementById("progressCircle");
+    if (circle) {
+        circle.style.strokeDashoffset = offset;
+    }
+
+    document.getElementById("currentText").innerText = `${currentValue}g`;
+    document.getElementById("remainText").innerText = `${goal - currentValue}g 남았어요!`;
+  }
+
+  function toggleEditMode(id) {
+    const item = proteinList.find((p) => p.id === id);
+    const listEl = document.getElementById("proteinList");
+
+    // 기존 요소 삭제
+    listEl.innerHTML = "";
+
+    proteinList.forEach((p) => {
+      if (p.id === id) {
+        // 수정 모드
+        const editHTML = `
+          <div class="protein-item items-end gap-2">
+            <input type="text" value="${p.name}" class="flex-1" placeholder="이름" id="edit-name-${id}" />
+            <input type="number" value="${p.amount}" class="flex-1" placeholder="섭취량" id="edit-amount-${id}" />
+            <div class="flex gap-2 text-lg">
+              <button onclick="saveEdit(${id})" title="확인" class="hover:opacity-80">✅</button>
+              <button onclick="renderList()" title="취소" class="hover:opacity-80">❌</button>
+            </div>
+          </div>
+        `;
+          listEl.insertAdjacentHTML("beforeend", editHTML);
+      } else {
+        const html = `
+          <div class="protein-item" data-id="${p.id}">
+            <div class="flex items-center gap-2">
+              <p class="text-sm font-medium text-gray-800 truncate">${p.name}</p>
+              <span class="text-xs text-gray-500 whitespace-nowrap">${p.amount}g</span>
+            </div>
+            <div class="flex gap-2 text-lg text-gray-700">
+              <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${p.id})">✏️</button>
+              <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${p.id})">🗑️</button>
+            </div>
+          </div>
+        `;
+        listEl.insertAdjacentHTML("beforeend", html);
+      }
+    });
+  }
+
+  function saveEdit(id) {
+    const newName = document.getElementById(`edit-name-${id}`).value;
+    const newAmount = parseInt(document.getElementById(`edit-amount-${id}`).value, 10);
+    const index = proteinList.findIndex(p => p.id === id);
+
+    proteinList[index].name = newName;
+    proteinList[index].amount = newAmount;
+    renderList();
+  }
+
+  function deleteProtein(id) {
+    const index = proteinList.findIndex(p => p.id === id);
+    if (index !== -1) {
+      proteinList.splice(index, 1);
+      renderList();
+    }
+  }
+
+  function setToday() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const formatted = `${yyyy}.${mm}.${dd}`;
+
+    document.getElementById("todayText").innerText = formatted;
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    setToday();
+    setTimeout(() => {
+      updateProgress(current);
+    }, 100);
+
+    renderList();
+  });
+</script>
+</html>
