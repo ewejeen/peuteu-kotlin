@@ -157,8 +157,14 @@
           return window.location.href.indexOf('history') > -1;
       }
 
+      async function renderFirstPage() {
+          currentPage = 0;
+          isLastPage = false;
+          await renderNextPage();
+      }
+
       window.addEventListener("DOMContentLoaded", () => {
-          renderNextPage();
+          renderFirstPage();
           initIntersectionObserver(); // 무한 스크롤 감지 시작
       });
 

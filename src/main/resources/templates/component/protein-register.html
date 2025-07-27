@@ -7,7 +7,7 @@
 <th:block th:fragment="proteinRegister">
 
   <!-- 단백질 등록 -->
-  <form id="proteinForm" class="protein-submit-form mt-2">
+  <form id="proteinForm" class="protein-submit-form">
     <div class="flex items-end gap-2">
       <div class="flex-1">
         <label for="name" class="label-submit">이름</label>
@@ -26,48 +26,33 @@
   </form>
 
   <script>
-      let currentPage = 0;
+    /*
+      단백질 수정
+     */
+    async function saveEdit(id) {
+      const name = document.getElementById(`edit-name-${id}`).value.trim();
+      const amount = Math.round(document.getElementById(`edit-amount-${id}`).value.trim() * 10) / 10;
 
-      /*
-        단백질 수정
-       */
-      async function saveEdit(id) {
-          const name = document.getElementById(`edit-name-${id}`).value.trim();
-          const amount = Math.round(document.getElementById(`edit-amount-${id}`).value.trim() * 10) / 10;
-
-          if (!name || isNaN(amount) || amount <= 0) {
-              alert("이름과 유효한 섭취량을 입력해주세요.");
-              return;
-          }
-
-          try {
-              const res = await fetch(`/api/proteins/${id}`, {
-                  method: "PUT",
-                  headers: {"Content-Type": "application/json"},
-                  body: JSON.stringify({name, amount})
-              });
-
-              if (!res.ok) throw new Error("수정 실패");
-
-              const listEl = document.getElementById("proteinList");
-              const itemEl = listEl.querySelector(`[data-id="${id}"]`);
-              itemEl.classList.remove('gap-2');
-
-              itemEl.innerHTML = `
-        <div class="flex items-center gap-2">
-          <p class="text-sm font-medium text-gray-800 truncate">${name}</p>
-          <span class="text-xs text-gray-500 whitespace-nowrap">${amount}g</span>
-        </div>
-        <div class="flex gap-2 text-lg text-gray-700">
-          <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${id}, true)">✏️</button>
-          <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${id})">🗑️</button>
-        </div>
-      `;
-          } catch (err) {
-              console.error(err);
-              alert("수정 중 오류가 발생했습니다.");
-          }
+      if (!name || isNaN(amount) || amount <= 0) {
+          alert("이름과 유효한 섭취량을 입력해주세요.");
+          return;
       }
+
+      try {
+          const res = await fetch(`/api/proteins/${id}`, {
+              method: "PUT",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({name, amount})
+          });
+
+          if (!res.ok) throw new Error("수정 실패");
+
+          await renderFirstPage();
+      } catch (err) {
+          console.error(err);
+          alert("수정 중 오류가 발생했습니다.");
+      }
+    }
 
       /*
         단백질 신규 등록
@@ -94,9 +79,8 @@
 
               if (!res.ok) throw new Error("등록 실패");
 
-              currentPage = 0;
-              isLastPage = false;
-              await renderNextPage();
+              await renderFirstPage();
+
               nameInput.value = "";
               amountInput.value = "";
           } catch (err) {
@@ -118,9 +102,7 @@
 
               if (!res.ok) throw new Error("삭제 실패");
 
-              currentPage = 0;
-              isLastPage = false;
-              await renderNextPage();
+              await renderFirstPage();
           } catch (err) {
               console.error(err);
               alert("삭제 중 오류가 발생했습니다.");
