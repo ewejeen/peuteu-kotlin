@@ -6,39 +6,156 @@
       th:with="pageTitle='프로틴 히스토리', activePage='history'"
 >
 
-<head layout:fragment="head" >
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
+<th:block layout:fragment="head">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <style>
-    .fc-daygrid-day.fc-day-today {
-      background-color: #dbeafe !important;
-      border-radius: 10px;
-    }
-    .fc-daygrid-day.goal-day {
-      background-color: #bfdbfe !important;
-      font-weight: bold;
-      border-radius: 10px;
-    }
+      /* 전체 캘린더 */
+      #calendar {
+          background-color: white;
+          border-radius: 0.75rem; /* rounded-xl */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* shadow-lg */
+          padding: 1.25rem;
+          border: 1px solid #e5e7eb; /* border-gray-200 */
+      }
+
+      /* 요일 헤더 */
+      .fc-col-header-cell-cushion {
+          font-size: 0.75rem;        /* text-xs */
+          text-transform: uppercase; /* uppercase */
+          letter-spacing: 0.05em;    /* tracking-wider */
+          color: #9ca3af;            /* text-gray-400 */
+          font-weight: 600;
+      }
+
+      /* 날짜 텍스트 */
+      .fc-daygrid-day-number {
+          display: inline-block;
+          font-size: 0.875rem; /* text-sm */
+          font-weight: 600;
+          padding: 6px 8px;
+          border-radius: 0.5rem;
+          color: #1f2937; /* text-gray-800 */
+          transition: background-color 0.2s ease;
+          box-sizing: border-box;
+      }
+
+      /* 날짜 hover 효과 */
+      .fc-daygrid-day:hover .fc-daygrid-day-number {
+          background-color: #f3f4f6; /* bg-gray-100 */
+          color: #9ca3af;
+      }
+
+      .fc-day-today {
+          background-color: transparent !important; /* 전체 배경 제거 */
+      }
+      /* 오늘 날짜 */
+      .fc-day-today .fc-daygrid-day-number {
+          background-color: #dbeafe !important; /* bg-blue-100 */
+          color: #2563eb !important;            /* text-blue-600 */
+          font-weight: 700;
+      }
+
+      /* 목표일 */
+      .goal-day .fc-daygrid-day-number  {
+          background-color: #3b82f6; /* bg-blue-500 */
+          color: white;
+          font-weight: 700;
+      }
+
+      /* 선택된 날짜 */
+      .selected-day .fc-daygrid-day-number {
+          background-color: #eff6ff;
+          outline: 1px solid #60a5fa; /* ring-blue-400 */
+          color: #1f2937;
+      }
+
+      /* 달력 구조 다듬기 */
+      .fc-theme-standard td,
+      .fc-theme-standard th {
+          border: none;
+      }
+      .fc-daygrid-event {
+          background-color: transparent !important;
+          font-size: 1rem;
+          text-align: center;
+          border: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+      }
+      .fc .fc-daygrid-day-top {
+        flex-direction: column;
+          text-align: center;
+      }
+      .fc-daygrid-day-events {
+          min-height: 1em !important;
+          margin-bottom: 0 !important;
+          margin-top: 3px !important;
+      }
+
+      .fc .fc-day {
+          padding: 6px;
+      }
+
+      .fc .fc-highlight {
+          background: none;
+      }
+
+      .fc .fc-scrollgrid {
+          border: 0 !important;
+      }
   </style>
-</head>
+</th:block>
 
 <th:block layout:fragment="content">
   <h2 class="page-title">프로틴 히스토리</h2>
 
+  <!-- 달력 컨트롤 헤더 -->
+  <div class="flex items-center justify-between mb-3 px-1">
+    <!-- ← 이전달 -->
+    <button id="prevMonthBtn"
+            class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-blue-600 border border-gray-300 transition"
+            title="이전달">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+
+    <!-- 📅 연도/월 -->
+    <h3 id="calendarTitle" class="text-gray-800 font-semibold text-lg">
+      2025년 07월
+    </h3>
+
+    <!-- 다음달 → -->
+    <button id="nextMonthBtn"
+            class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-blue-600 border border-gray-300 transition"
+            title="다음달">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+
+
   <!-- 달력 표시 -->
   <div id="calendar" class="mb-4 rounded-lg overflow-hidden border"></div>
-  <p class="text-sm text-gray-500 text-center mb-4">이 달의 목표 달성일: <span class="font-medium text-gray-700">5일</span></p>
+  <p class="text-sm text-gray-500 text-center mb-4">이 달의 목표 달성일: <span class="font-medium text-gray-700" id="successCount"></span></p>
 
   <!-- 히스토리 리스트 -->
   <div class="mt-4">
-    <h3 id="historyDate" class="text-blue-500 font-semibold mb-2">2024.10.07의 히스토리</h3>
-    <div class="space-y-2 protein-list" id="historyList">
-      <!-- 아이템이 동적으로 삽입될 영역 -->
-    </div>
+    <h3 id="historyDate" class="text-blue-500 font-semibold mb-2 mt-2">히스토리</h3>
+    <!--<div class="space-y-2 protein-list" id="historyList">
+      &lt;!&ndash; 아이템이 동적으로 삽입될 영역 &ndash;&gt;
+    </div>-->
   </div>
+  <div th:replace="~{component/protein-history :: proteinHistory}"></div>
+<!--  <div th:replace="~{component/protein-register :: proteinRegister}"></div>-->
 
   <!-- 항목 추가 폼 -->
-  <div class="mt-6">
+  <!--<div class="mt-6">
     <form id="historyForm" class="protein-submit-form">
       <div class="flex items-end gap-2">
         <div class="flex-1">
@@ -56,7 +173,7 @@
         </div>
       </div>
     </form>
-  </div>
+  </div>-->
 </th:block>
 
 <script layout:fragment="script">
@@ -79,44 +196,121 @@
   };
 
   function renderHistory(date) {
-    const list = document.getElementById('historyList');
     const title = document.getElementById('historyDate');
     title.innerText = `${date}의 히스토리`;
-    list.innerHTML = '';
-    (proteinData[date] || []).forEach(item => {
-      list.innerHTML += `
-        <div class="protein-item">
-          <div class="flex items-center gap-2">
-            <p class="text-sm font-medium text-gray-800 truncate">${item.name}</p>
-            <span class="text-xs text-gray-500 whitespace-nowrap">${item.amount}g</span>
-          </div>
-          <div class="flex gap-2 text-lg text-gray-700">
-            <button title="수정" class="hover:opacity-70">✏️</button>
-            <button title="삭제" class="hover:opacity-70">🗑️</button>
-          </div>
-        </div>`;
-    });
+
+    currentPage = 0;
+    isLastPage = false;
+    renderNextPage(date);
   }
 
+  /*
+    단백질 총섭취량 조회
+   */
+  async function renderSuccessfulDates() {
+      const date = COMMON.getTodayYearAndMonth();
+
+      try {
+          const res = await fetch(`/api/proteins/successful-dates?year=${date.year}&month=${date.month}`);
+          if (!res.ok) throw new Error("섭취량 조회 실패");
+
+          const data = await res.json();
+          const successCount = data.data.length;
+
+
+          data.data.forEach(d => {
+              const exists = calendar.getEvents().some(e => e.startStr === d);
+
+              if (!exists) {
+                  calendar.addEvent({title: '💪', start: `${d}`})
+              }
+          });
+          document.getElementById('successCount').innerText = `${successCount}일`;
+      } catch (err) {
+          console.error(err);
+      }
+  }
+
+  function removeEmptyLastRow() {
+      const calendarEl = document.getElementById('calendar');
+      const rows = calendarEl.querySelectorAll('.fc-daygrid-body tr');
+
+      rows.forEach((row) => {
+          const allOtherMonth = [...row.querySelectorAll('.fc-daygrid-day')]
+              .every(cell => cell.classList.contains('fc-day-other'));
+
+          if (allOtherMonth) {
+              row.style.display = 'none'; // 의미 없는 줄 숨김
+          }
+      });
+  }
+
+  function updateCalendarTitle(view) {
+      const date = view.currentStart;
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      document.getElementById('calendarTitle').innerText = `${year}년 ${month.toString().padStart(2, '0')}월`;
+  }
+
+  document.getElementById('prevMonthBtn').addEventListener('click', () => calendar.prev());
+  document.getElementById('nextMonthBtn').addEventListener('click', () => calendar.next());
+
+  let calendar;
   document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      locale: 'ko',
-      height: 350,
-      headerToolbar: false,
-      selectable: true,
-      dateClick: function (info) {
-        renderHistory(info.dateStr);
-      },
-      dayCellDidMount: function (arg) {
-        if (goalDates.includes(arg.date.toISOString().slice(0, 10))) {
-          arg.el.classList.add('goal-day');
+    let selectedCell;
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'ko',
+        selectable: true,
+        headerToolbar: false,
+        height: 'auto',
+        // events: [
+        //     { title: '💪', start: '2025-07-20' },
+        //     { title: '💪', start: '2025-07-03' },
+        //     { title: '💪', start: '2025-07-05' },
+        // ],
+        dateClick: function (info) {
+            // 선택 이벤트는 위의 selectedCell 강조 참고
+            renderHistory(info.dateStr);
+            if (selectedCell) selectedCell.classList.remove('selected-day');
+            selectedCell = info.dayEl;
+            selectedCell.classList.add('selected-day');
+        },
+        dayCellDidMount: function (arg) {
+            // console.log(arg.date.toISOString().slice(0, 10))
+
+        },
+        dayCellContent: function(arg) {
+            return { domNodes: [document.createTextNode(arg.date.getDate())] };
+        },
+        datesSet: function (arg) {
+            removeEmptyLastRow(); // 렌더 직후 호출
+            renderSuccessfulDates();
+            updateCalendarTitle(arg.view);
+        },
+        eventDidMount: function(info) {
+            const eventDateStr = info.event.startStr;
+            const cell = document.querySelector(`.fc-day[data-date="${eventDateStr}"]`);
+            if (cell) {
+                cell.classList.add('goal-day');
+            }
         }
-      }
+        // eventContent: function (arg) {
+        //     return {
+        //         html: `<span class="text-xs font-medium py-0.5">${arg.event.title}</span>`
+        //     };
+        // }
+
     });
     calendar.render();
-    renderHistory('2024-10-07');
+    /*
+    calendar.addEvent({
+      title: '단백질 보충 완료 💪',
+      start: '2025-07-26'
+    });
+     */
+    renderHistory(COMMON.getTodayDate());
   });
 </script>
 </html>

@@ -10,10 +10,12 @@
     <!-- Tailwind-->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <script th:src="@{/js/common.js}"></script>
+
     <!-- 공통 스타일 -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
 
     <!-- 페이지 전용 head -->
-    <th:block layout:fragment="head" />
+    <th:block layout:fragment="head"></th:block>
 </head>
 </html>

@@ -21,7 +21,17 @@ class ProteinQueryService(
 
     fun findProteinTotalByDate(date: String): Double {
         val dates = parseDate(date)
-        return proteinRepository.findProteinTotalByDate(dates[0], dates[1]);
+        return proteinRepository.findProteinTotalByDate(dates[0], dates[1])
+    }
+
+    fun findSuccessfulDatesInMonth(year: Int, month: Int): List<String> {
+        // 날짜별 프로틴 섭취 조회
+
+        // 개인 프로틴 목표량 조회
+
+        // 결과값 가공
+        //return proteinRepository.findSuccessfulDatesInMonth(year, month)
+        return listOf("2025-07-01", "2025-07-02", "2025-07-21")
     }
 
     private fun parseDate(date: String): List<LocalDateTime> {

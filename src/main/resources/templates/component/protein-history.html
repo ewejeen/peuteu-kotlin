@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+
+<th:block th:fragment="proteinHistory">
+
+  <!-- 단백질 목록 -->
+  <div class="space-y-2 protein-list" id="proteinList">
+  </div>
+  <div id="scrollObserverTarget" class="h-1"></div>
+
+  <script>
+      /*
+        단백질 목록 조회
+       */
+      let currentPage = 0;
+      let isLastPage = false;
+      let isLoading = false;
+
+      async function renderNextPage(date) {
+          if (isLoading || isLastPage) return;
+          isLoading = true;
+
+          const listEl = document.getElementById("proteinList");
+          date = date ? date.replaceAll('-', '') : COMMON.getTodayDate().replaceAll('-', '');
+
+
+          try {
+              const res = await fetch(`/api/proteins/${date}?page=${currentPage}`);
+              if (!res.ok) throw new Error("리스트 조회 실패");
+
+              const data = await res.json();
+              const content = data.data.content || [];
+
+              if (content.length === 0 && currentPage === 0) {
+                  const noContent = isHistoryPage() ?
+                    `<p>등록된 단백질이 없어요.</p>` :
+                    `<p>아직 등록된 단백질이 없어요.</p><p>오늘의 단백질을 추가해보세요 💪</p>`;
+
+                  listEl.innerHTML = `
+                    <div class="text-center text-gray-500 text-sm py-10">
+                      ${noContent}
+                     </div>
+                  `;
+
+                  if(!isHistoryPage()) {
+                    updateProgress(0);
+                  }
+                  isLastPage = true;
+              } else {
+                  if (currentPage === 0) {
+                      listEl.innerHTML = '';
+                  }
+
+                  content.forEach((item) => {
+                    const itemHTML = `
+                      <div class="protein-item" data-id="${item.id}">
+                        <div class="flex items-center gap-2">
+                          <p class="text-sm font-medium text-gray-800 truncate">${item.name}</p>
+                          <span class="text-xs text-gray-500 whitespace-nowrap">${item.amount}g</span>
+                        </div>
+                        <div class="flex gap-2 text-lg text-gray-700">
+                          <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${item.id}, true)">✏️</button>
+                          <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${item.id})">🗑️</button>
+                        </div>
+                      </div>
+                    `;
+                    listEl.insertAdjacentHTML("beforeend", itemHTML);
+                  });
+
+                  if(!isHistoryPage()) {
+                    await renderTotalProtein();
+                  }
+
+                  if (data.data.last === true) {
+                      isLastPage = true;
+                  } else {
+                      currentPage++;
+                  }
+              }
+          } catch (err) {
+              console.error(err);
+              listEl.innerHTML = `
+          <div class="text-center text-red-500 text-sm py-10">
+            데이터를 불러오는 중 오류가 발생했어요.
+          </div>
+        `;
+          } finally {
+              isLoading = false;
+          }
+      }
+
+      /*
+        옵저버 등록
+       */
+      function initIntersectionObserver() {
+          const target = document.getElementById("scrollObserverTarget");
+
+          const observer = new IntersectionObserver(
+              async (entries) => {
+                  const entry = entries[0];
+                  if (entry.isIntersecting && !isLastPage && !isLoading) {
+                      await renderNextPage();
+                  }
+              },
+              {
+                  root: null,
+                  rootMargin: "0px",
+                  threshold: 1.0
+              }
+          );
+
+          observer.observe(target);
+      }
+
+      /*
+        단백질 목록 수정 모드 진입
+       */
+      function toggleEditMode(id, isEdit) {
+          const listEl = document.getElementById("proteinList");
+          const itemEl = listEl.querySelector(`[data-id="${id}"]`);
+
+          if (isEdit) {
+              itemEl.classList.add('gap-2');
+              const name = itemEl.querySelector("p").innerText;
+              const amount = Math.round(parseInt(itemEl.querySelector("span").innerText) * 10) / 10;
+
+              itemEl.innerHTML = `
+        <input type="text" value="${name}" class="flex-1" placeholder="이름" id="edit-name-${id}" />
+        <input type="number" value="${amount}" class="flex-1" placeholder="섭취량" id="edit-amount-${id}" step="0.1"/>
+        <div class="flex gap-2 text-lg">
+          <button onclick="saveEdit(${id})" title="확인" class="hover:opacity-80">✅</button>
+          <button onclick="toggleEditMode(${id}, false)" title="취소" class="hover:opacity-80">❌</button>
+        </div>
+      `;
+          } else {
+              itemEl.classList.remove('gap-2');
+              const name = document.getElementById(`edit-name-${id}`).value;
+              const amount = document.getElementById(`edit-amount-${id}`).value;
+
+              itemEl.innerHTML = `
+        <div class="flex items-center gap-2">
+          <p class="text-sm font-medium text-gray-800 truncate">${name}</p>
+          <span class="text-xs text-gray-500 whitespace-nowrap">${amount}g</span>
+        </div>
+        <div class="flex gap-2 text-lg text-gray-700">
+          <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${id}, true)">✏️</button>
+          <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${id})">🗑️</button>
+        </div>
+      `;
+          }
+      }
+
+      function isHistoryPage() {
+          return window.location.href.indexOf('history') > -1;
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+          renderNextPage();
+          initIntersectionObserver(); // 무한 스크롤 감지 시작
+      });
+
+  </script>
+</th:block>
+</html>
