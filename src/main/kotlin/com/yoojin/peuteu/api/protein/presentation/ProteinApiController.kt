@@ -37,6 +37,12 @@ class ProteinApiController(
         return proteinQueryService.findProteinTotalByDate(date)
     }
 
+    // 이번주/이번달/이번해 일별 프로틴 섭취량 조회
+    @GetMapping("/proteins/statistics/{standard}")
+    fun findProteinTotalByDateStandard(@PathVariable standard: String): List<Any> {
+        return proteinQueryService.findProteinTotalByDateStandard(standard)
+    }
+
     // 프로틴 수정
     @PutMapping("/proteins/{id}")
     fun update(@PathVariable id: Long, @RequestBody request: ProteinRequest) {

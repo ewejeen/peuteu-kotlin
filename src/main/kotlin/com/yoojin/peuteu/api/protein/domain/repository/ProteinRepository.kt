@@ -1,7 +1,9 @@
 package com.yoojin.peuteu.api.protein.domain.repository
 
 import com.yoojin.peuteu.api.protein.domain.model.Protein
+import com.yoojin.peuteu.api.protein.domain.repository.dto.DailyProteinTotal
 import com.yoojin.peuteu.api.protein.infrastructure.ProteinJpaRepository
+import com.yoojin.peuteu.api.protein.infrastructure.ProteinMyBatisRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -10,7 +12,8 @@ import java.time.LocalDateTime
 
 @Repository
 class ProteinRepository(
-    private val proteinJpaRepository: ProteinJpaRepository
+    private val proteinJpaRepository: ProteinJpaRepository,
+    private val proteinMyBatisRepository: ProteinMyBatisRepository
 ) {
     fun save(protein: Protein) {
         proteinJpaRepository.save(protein)
@@ -22,6 +25,10 @@ class ProteinRepository(
 
     fun findProteinTotalByDate(start: LocalDateTime, end: LocalDateTime): Double {
         return proteinJpaRepository.findAmountByCreatedAtBetween(start, end)
+    }
+
+    fun findProteinDailyTotal(startDate: LocalDateTime, endDate: LocalDateTime): List<DailyProteinTotal> {
+        return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByDaily(startDate, endDate)
     }
 
     fun findByIdOrNull(id: Long): Protein? {

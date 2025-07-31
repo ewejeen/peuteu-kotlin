@@ -24,6 +24,21 @@ class ProteinQueryService(
         return proteinRepository.findProteinTotalByDate(dates[0], dates[1])
     }
 
+    fun findProteinTotalByDateStandard(standard: String): List<Any> {
+        if(standard == "week") {
+            val startDate = LocalDate.of(2025,7,28).atStartOfDay()
+            val endDate = LocalDate.of(2025,7,30).atTime(23, 59, 59)
+            return proteinRepository.findProteinDailyTotal(startDate, endDate)
+        } else if (standard == "month") {
+
+        } else if (standard == "year") {
+
+        }
+        // TODO: month, year
+        return listOf(1)
+    }
+
+    // TODO
     fun findSuccessfulDatesInMonth(year: Int, month: Int): List<String> {
         // 날짜별 프로틴 섭취 조회
 
