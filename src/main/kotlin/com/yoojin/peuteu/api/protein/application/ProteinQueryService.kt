@@ -5,9 +5,11 @@ import com.yoojin.peuteu.api.protein.presentation.dto.response.ProteinResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 
 @Service
 class ProteinQueryService(
@@ -24,18 +26,23 @@ class ProteinQueryService(
         return proteinRepository.findProteinTotalByDate(dates[0], dates[1])
     }
 
+    // 날짜 기준별 프로틴 섭취량 조회
     fun findProteinTotalByDateStandard(standard: String): List<Any> {
-        if(standard == "week") {
-            val startDate = LocalDate.of(2025,7,28).atStartOfDay()
-            val endDate = LocalDate.of(2025,7,30).atTime(23, 59, 59)
-            return proteinRepository.findProteinDailyTotal(startDate, endDate)
-        } else if (standard == "month") {
-
-        } else if (standard == "year") {
-
+        when (standard) {
+            "week" -> {
+                val datePair = getStartAndEndDate(standard)
+                return proteinRepository.findProteinDailyTotal(datePair!!.first, datePair.second)
+            }
+            "month" -> {
+                val datePair = getStartAndEndDate(standard)
+                return proteinRepository.findProteinWeeklyTotal(datePair!!.first, datePair.second)
+            }
+            "year" -> {
+                val year = LocalDate.now().year
+                return proteinRepository.findProteinMonthlyTotal(year)
+            }
+            else -> error("Invalid standard format")
         }
-        // TODO: month, year
-        return listOf(1)
     }
 
     // TODO
@@ -57,5 +64,26 @@ class ProteinQueryService(
         val endOfDay = parsedDate.plusDays(1).atStartOfDay()
 
         return listOf(startOfDay, endOfDay)
+    }
+
+    private fun getStartAndEndDate(standard: String): Pair<LocalDate, LocalDate>? {
+        val today = LocalDate.now()
+
+        if (standard == "week") {
+            val startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val endDate = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+
+            return Pair(startDate, endDate)
+        } else if (standard == "month") {
+            val firstDayOfMonth = LocalDate.of(today.year, today.monthValue, 1)
+            val lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth())
+
+            val startDate = firstDayOfMonth.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val endDate = lastDayOfMonth.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+
+            return Pair(startDate, endDate)
+        }
+
+        return null
     }
 }

@@ -2,12 +2,15 @@ package com.yoojin.peuteu.api.protein.domain.repository
 
 import com.yoojin.peuteu.api.protein.domain.model.Protein
 import com.yoojin.peuteu.api.protein.domain.repository.dto.DailyProteinTotal
+import com.yoojin.peuteu.api.protein.domain.repository.dto.MonthlyProteinTotal
+import com.yoojin.peuteu.api.protein.domain.repository.dto.WeeklyProteinTotal
 import com.yoojin.peuteu.api.protein.infrastructure.ProteinJpaRepository
 import com.yoojin.peuteu.api.protein.infrastructure.ProteinMyBatisRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Repository
@@ -27,8 +30,16 @@ class ProteinRepository(
         return proteinJpaRepository.findAmountByCreatedAtBetween(start, end)
     }
 
-    fun findProteinDailyTotal(startDate: LocalDateTime, endDate: LocalDateTime): List<DailyProteinTotal> {
+    fun findProteinDailyTotal(startDate: LocalDate, endDate: LocalDate): List<DailyProteinTotal> {
         return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByDaily(startDate, endDate)
+    }
+
+    fun findProteinWeeklyTotal(startDate: LocalDate, endDate: LocalDate): List<WeeklyProteinTotal> {
+        return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByWeekly(startDate, endDate)
+    }
+
+    fun findProteinMonthlyTotal(year: Int): List<MonthlyProteinTotal> {
+        return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByMonthly(year)
     }
 
     fun findByIdOrNull(id: Long): Protein? {
