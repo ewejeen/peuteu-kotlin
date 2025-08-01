@@ -51,24 +51,39 @@
 
 <script layout:fragment="script">
     function getWeeklyRangesForMonth(year, month) {
+        month--;
         const weeks = [];
-        let start = new Date(year, month, 1);
-        while (start.getDay() !== 1) start.setDate(start.getDate() - 1); // 월요일 시작
-        while (start.getMonth() <= month || (start.getMonth() === 0 && month === 11)) {
-            const end = new Date(start);
-            end.setDate(end.getDate() + 6);
-            weeks.push({
-                label: `${start.getMonth() + 1}.${start.getDate()}~${end.getMonth() + 1}.${end.getDate()}`,
-                total: Math.floor(Math.random() * 600) + 300
-            });
-            start.setDate(start.getDate() + 7);
+        const startOfMonth = new Date(year, month, 1);
+        const endOfMonth = new Date(year, month + 1, 0);
+
+        let start = new Date(startOfMonth);
+        while (start.getDay() !== 1) {
+            start.setDate(start.getDate() - 1);
         }
+
+        while (true) {
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6);
+
+            if (start <= endOfMonth && end >= startOfMonth) {
+                weeks.push({
+                    label: `${start.getMonth() + 1}.${start.getDate()}~${end.getMonth() + 1}.${end.getDate()}`,
+                    total: Math.floor(Math.random() * 600) + 300
+                });
+            }
+
+            start.setDate(start.getDate() + 7);
+
+            if (start > endOfMonth && start.getDay() === 1) break;
+        }
+
         return weeks;
     }
 
+
     const chartData = {
         week: [50, 70, 60, 55, 80, 40, 65],
-        month: getWeeklyRangesForMonth(2025, 6),
+        month: getWeeklyRangesForMonth(2025, 8),
         year: Array.from({ length: 12 }, () => Math.floor(Math.random() * 1800) + 300),
     };
 
