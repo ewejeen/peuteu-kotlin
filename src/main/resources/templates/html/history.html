@@ -63,8 +63,8 @@
             <input type="text" id="historyName" placeholder="예: 단백질 바" required class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" />
           </div>
           <div class="w-24">
-            <label for="historyAmount" class="block text-xs text-gray-500 mb-1">섭취량 (g)</label>
-            <input type="number" id="historyAmount" placeholder="20" required class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" />
+            <label for="historyIntake" class="block text-xs text-gray-500 mb-1">섭취량 (g)</label>
+            <input type="number" id="historyIntake" placeholder="20" required class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" />
           </div>
           <div>
             <button type="submit" class="px-3 py-1.5 rounded-md bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition">추가</button>
@@ -96,17 +96,17 @@
 
   const proteinData = {
     '2025-07-03': [
-      { name: '닭가슴살', amount: 30 },
-      { name: '단백질바', amount: 20 },
-      { name: '닭가슴살', amount: 30 },
-      { name: '단백질바', amount: 20 },
-      { name: '닭가슴살', amount: 30 },
-      { name: '단백질바', amount: 20 },
-      { name: '닭가슴살', amount: 30 },
-      { name: '단백질바', amount: 20 },
+      { name: '닭가슴살', intake: 30 },
+      { name: '단백질바', intake: 20 },
+      { name: '닭가슴살', intake: 30 },
+      { name: '단백질바', intake: 20 },
+      { name: '닭가슴살', intake: 30 },
+      { name: '단백질바', intake: 20 },
+      { name: '닭가슴살', intake: 30 },
+      { name: '단백질바', intake: 20 },
     ],
     '2025-07-08': [
-      { name: '쉐이크', amount: 25 }
+      { name: '쉐이크', intake: 25 }
     ]
   };
 
@@ -121,7 +121,7 @@
           <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-2">
               <p class="text-sm font-medium text-gray-800 truncate">${item.name}</p>
-              <span class="text-xs text-gray-500 whitespace-nowrap">${item.amount}g</span>
+              <span class="text-xs text-gray-500 whitespace-nowrap">${item.intake}g</span>
             </div>
             <div class="flex gap-2 text-lg text-gray-700">
               <button title="수정" class="hover:opacity-70">✏️</button>

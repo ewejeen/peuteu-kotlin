@@ -7,13 +7,14 @@ import java.time.LocalDateTime
 @Entity
 class Protein(
 
-    @Column(nullable = false)
     var name: String,
 
-    @Column(nullable = false)
-    var amount: Double,
+    var intake: Double,
 
-    @Column(nullable = false, updatable = false)
+    var intakeAt: LocalDateTime,
+
+    var userId: Long = 1,
+
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
 
@@ -23,8 +24,8 @@ class Protein(
         protected set
 
     companion object {
-        fun create(name: String, amount: Double): Protein {
-            return Protein(name, amount)
+        fun create(name: String, intake: Double, intakeAt: LocalDateTime, userId: Long): Protein {
+            return Protein(name, intake, intakeAt, userId)
         }
     }
 }

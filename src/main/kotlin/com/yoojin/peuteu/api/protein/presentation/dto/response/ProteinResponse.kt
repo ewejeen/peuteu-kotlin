@@ -6,16 +6,16 @@ import java.time.LocalDateTime
 data class ProteinResponse(
     val id: Long,
     val name: String,
-    val amount: Double,
-    val createdAt: LocalDateTime
+    val intake: Double,
+    val intakeAt: LocalDateTime
 ) {
     companion object {
         fun from(entity: Protein): ProteinResponse {
             return ProteinResponse(
                 id = entity.id!!,
                 name = entity.name,
-                amount = entity.amount,
-                createdAt = entity.createdAt
+                intake = entity.intake,
+                intakeAt = entity.intakeAt
             )
         }
     }
