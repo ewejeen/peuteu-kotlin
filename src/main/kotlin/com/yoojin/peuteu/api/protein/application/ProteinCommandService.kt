@@ -26,10 +26,9 @@ class ProteinCommandService (
     }
 
     fun delete(id: Long) {
-        if(!proteinRepository.existsById(id)) {
-            throw IllegalArgumentException("삭제할 단백질 정보가 존재하지 않습니다.")
-        }
+        val protein = proteinRepository.findByIdOrNull(id)
+            ?: throw IllegalArgumentException("삭제할 단백질 정보가 존재하지 않습니다.")
 
-        proteinRepository.delete(id)
+        protein.deleted = true
     }
 }

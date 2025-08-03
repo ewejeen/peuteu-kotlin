@@ -26,7 +26,7 @@ interface ProteinMyBatisRepository {
                    SUM(p.intake)     AS total_intake
             FROM protein p
             WHERE p.user_id = 1
-              AND p.delete_yn = 'N'
+              AND p.deleted = false
               AND YEAR(p.intake_at) = #{year} AND MONTH(p.intake_at) = #{month} 
             GROUP BY p.user_id, DATE(p.intake_at)
         ) AS sub
@@ -43,7 +43,7 @@ interface ProteinMyBatisRepository {
             WHERE date < DATE(#{endDate})
         )
         SELECT d.date, COALESCE(SUM(p.intake), 0) AS total 
-        FROM date_range d LEFT JOIN protein p ON d.date = DATE(p.intake_at) 
+        FROM date_range d LEFT JOIN protein p ON d.date = DATE(p.intake_at)
         GROUP BY d.date ORDER BY d.date
     """)
     fun findIntakeByIntakeAtBetweenGroupByDaily(startDate: LocalDate, endDate: LocalDate): List<DailyProteinTotal>

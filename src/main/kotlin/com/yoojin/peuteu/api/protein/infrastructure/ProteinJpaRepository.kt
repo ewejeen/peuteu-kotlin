@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
 interface ProteinJpaRepository: JpaRepository<Protein, Long> {
-    fun findAllByIntakeAtBetween(startDate: LocalDateTime, endDate: LocalDateTime, pageable: Pageable): Page<Protein>
+    fun findAllByIntakeAtBetweenAndDeletedIsFalse(startDate: LocalDateTime, endDate: LocalDateTime, pageable: Pageable): Page<Protein>
 
-    @Query("SELECT SUM(intake) FROM Protein WHERE intakeAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT SUM(intake) FROM Protein WHERE intakeAt BETWEEN :startDate AND :endDate AND deleted = false")
     fun findIntakeByIntakeAtBetween(startDate: LocalDateTime, endDate: LocalDateTime): Double
 }

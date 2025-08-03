@@ -24,7 +24,7 @@ class ProteinRepository(
     }
 
     fun findAllByDate(start: LocalDateTime, end: LocalDateTime, pageable: Pageable): Page<Protein> {
-        return proteinJpaRepository.findAllByIntakeAtBetween(start, end, pageable)
+        return proteinJpaRepository.findAllByIntakeAtBetweenAndDeletedIsFalse(start, end, pageable)
     }
 
     fun findProteinTotalByDate(start: LocalDateTime, end: LocalDateTime): Double {
@@ -49,13 +49,5 @@ class ProteinRepository(
 
     fun findByIdOrNull(id: Long): Protein? {
         return proteinJpaRepository.findByIdOrNull(id)
-    }
-
-    fun existsById(id: Long): Boolean {
-        return proteinJpaRepository.existsById(id)
-    }
-
-    fun delete(id: Long) {
-        proteinJpaRepository.deleteById(id)
     }
 }

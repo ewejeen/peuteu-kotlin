@@ -1,8 +1,10 @@
 package com.yoojin.peuteu.api.protein.domain.model
 
 import jakarta.persistence.*
+import org.hibernate.annotations.DynamicUpdate
 import java.time.LocalDateTime
 
+@DynamicUpdate
 @Table(name = "protein")
 @Entity
 class Protein(
@@ -15,7 +17,9 @@ class Protein(
 
     var userId: Long = 1,
 
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    var deleted: Boolean = false
 ) {
 
     @Id
