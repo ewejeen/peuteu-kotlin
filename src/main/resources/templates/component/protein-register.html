@@ -64,6 +64,7 @@
           const intakeInput = document.getElementById("intake");
           const name = nameInput.value.trim();
           const intake = Math.round(intakeInput.value.trim() * 10) / 10;
+          const intakeAt = COMMON.getCurrentTimeISOString(); //TODO
 
           if (!name || isNaN(intake) || intake <= 0) {
               alert("이름과 유효한 섭취량을 입력해주세요.");
@@ -74,7 +75,7 @@
               const res = await fetch("/api/proteins", {
                   method: "POST",
                   headers: {"Content-Type": "application/json"},
-                  body: JSON.stringify({name, intake})
+                  body: JSON.stringify({name, intake, intakeAt})
               });
 
               if (!res.ok) throw new Error("등록 실패");
