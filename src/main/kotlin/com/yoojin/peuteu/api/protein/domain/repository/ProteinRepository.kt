@@ -3,6 +3,7 @@ package com.yoojin.peuteu.api.protein.domain.repository
 import com.yoojin.peuteu.api.protein.domain.model.Protein
 import com.yoojin.peuteu.api.protein.domain.repository.dto.DailyProteinTotal
 import com.yoojin.peuteu.api.protein.domain.repository.dto.MonthlyProteinTotal
+import com.yoojin.peuteu.api.protein.domain.repository.dto.ProteinSuccessfulDates
 import com.yoojin.peuteu.api.protein.domain.repository.dto.WeeklyProteinTotal
 import com.yoojin.peuteu.api.protein.infrastructure.ProteinJpaRepository
 import com.yoojin.peuteu.api.protein.infrastructure.ProteinMyBatisRepository
@@ -23,23 +24,27 @@ class ProteinRepository(
     }
 
     fun findAllByDate(start: LocalDateTime, end: LocalDateTime, pageable: Pageable): Page<Protein> {
-        return proteinJpaRepository.findAllByCreatedAtBetween(start, end, pageable)
+        return proteinJpaRepository.findAllByIntakeAtBetween(start, end, pageable)
     }
 
     fun findProteinTotalByDate(start: LocalDateTime, end: LocalDateTime): Double {
-        return proteinJpaRepository.findAmountByCreatedAtBetween(start, end)
+        return proteinJpaRepository.findIntakeByIntakeAtBetween(start, end)
+    }
+
+    fun findSuccessfulDatesInMonth(year: Int, month: Int): List<ProteinSuccessfulDates> {
+        return proteinMyBatisRepository.findSuccessfulDatesInMonth(year, month)
     }
 
     fun findProteinDailyTotal(startDate: LocalDate, endDate: LocalDate): List<DailyProteinTotal> {
-        return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByDaily(startDate, endDate)
+        return proteinMyBatisRepository.findIntakeByIntakeAtBetweenGroupByDaily(startDate, endDate)
     }
 
     fun findProteinWeeklyTotal(startDate: LocalDate, endDate: LocalDate): List<WeeklyProteinTotal> {
-        return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByWeekly(startDate, endDate)
+        return proteinMyBatisRepository.findIntakeByIntakeAtBetweenGroupByWeekly(startDate, endDate)
     }
 
     fun findProteinMonthlyTotal(year: Int): List<MonthlyProteinTotal> {
-        return proteinMyBatisRepository.findAmountByCreatedAtBetweenGroupByMonthly(year)
+        return proteinMyBatisRepository.findIntakeByIntakeAtBetweenGroupByMonthly(year)
     }
 
     fun findByIdOrNull(id: Long): Protein? {

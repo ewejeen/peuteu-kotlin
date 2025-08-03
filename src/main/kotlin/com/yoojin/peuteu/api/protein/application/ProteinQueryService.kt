@@ -33,27 +33,31 @@ class ProteinQueryService(
                 val datePair = getStartAndEndDate(standard)
                 return proteinRepository.findProteinDailyTotal(datePair!!.first, datePair.second)
             }
+
             "month" -> {
                 val datePair = getStartAndEndDate(standard)
                 return proteinRepository.findProteinWeeklyTotal(datePair!!.first, datePair.second)
             }
+
             "year" -> {
                 val year = LocalDate.now().year
                 return proteinRepository.findProteinMonthlyTotal(year)
             }
+
             else -> error("Invalid standard format")
         }
     }
 
-    // TODO
+    // 해당 월의 프로틴 섭취 성공 일자 조회
     fun findSuccessfulDatesInMonth(year: Int, month: Int): List<String> {
-        // 날짜별 프로틴 섭취 조회
-
-        // 개인 프로틴 목표량 조회
+        // 날짜별 프로틴 섭취 달성 내역 조회
+        val result = proteinRepository.findSuccessfulDatesInMonth(year, month)
 
         // 결과값 가공
-        //return proteinRepository.findSuccessfulDatesInMonth(year, month)
-        return listOf("2025-07-01", "2025-07-02", "2025-07-21")
+        return result.stream()
+            .filter { it.total >= it.target }
+            .map { it.date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) }
+            .toList()
     }
 
     private fun parseDate(date: String): List<LocalDateTime> {
