@@ -6,6 +6,11 @@
       th:with="pageTitle='오늘의 프로틴', activePage='main'"
 >
 
+<head layout:fragment="head">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+
 <th:block layout:fragment="content">
   <h2 class="page-title mb-1">오늘의 프로틴</h2>
   <p class="text-lg font-bold text-gray-800 mb-6" id="todayText">2024.10.06</p>

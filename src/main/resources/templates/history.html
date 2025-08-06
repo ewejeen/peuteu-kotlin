@@ -8,7 +8,10 @@
 
 <th:block layout:fragment="head">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
   <style>
       /* 전체 캘린더 */
       #calendar {
@@ -146,7 +149,7 @@
 
   <!-- 히스토리 리스트 -->
   <div class="mt-4">
-    <h3 id="historyDate" class="text-blue-500 font-semibold mb-2 mt-2">히스토리</h3>
+    <h3 class="text-blue-500 font-semibold mb-2 mt-2"><span id="historyDate"></span>의 히스토리</h3>
     <!--<div class="space-y-2 protein-list" id="historyList">
       &lt;!&ndash; 아이템이 동적으로 삽입될 영역 &ndash;&gt;
     </div>-->
@@ -177,27 +180,9 @@
 </th:block>
 
 <script layout:fragment="script">
-  const goalDates = ['2025-07-01', '2025-07-04', '2025-07-06', '2025-07-10', '2025-07-12'];
-
-  const proteinData = {
-    '2025-07-03': [
-      { name: '닭가슴살', intake: 30 },
-      { name: '단백질바', intake: 20 },
-      { name: '닭가슴살', intake: 30 },
-      { name: '단백질바', intake: 20 },
-      { name: '닭가슴살', intake: 30 },
-      { name: '단백질바', intake: 20 },
-      { name: '닭가슴살', intake: 30 },
-      { name: '단백질바', intake: 20 },
-    ],
-    '2025-07-08': [
-      { name: '쉐이크', intake: 25 }
-    ]
-  };
-
   function renderHistory(date) {
     const title = document.getElementById('historyDate');
-    title.innerText = `${date}의 히스토리`;
+    title.innerText = date;
 
     currentPage = 0;
     isLastPage = false;
@@ -208,6 +193,7 @@
     단백질 총섭취량 조회
    */
   async function renderSuccessfulDates() {
+      calendar.removeAllEvents();
       const date = COMMON.getTodayYearAndMonth();
 
       try {
@@ -217,10 +203,8 @@
           const data = await res.json();
           const successCount = data.data.length;
 
-
           data.data.forEach(d => {
               const exists = calendar.getEvents().some(e => e.startStr === d);
-
               if (!exists) {
                   calendar.addEvent({title: '💪', start: `${d}`})
               }

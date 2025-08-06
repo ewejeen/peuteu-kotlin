@@ -1,8 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <th:block th:fragment="proteinHistory">
 
@@ -25,7 +22,6 @@
 
           const listEl = document.getElementById("proteinList");
           date = date ? date.replaceAll('-', '') : COMMON.getTodayDate().replaceAll('-', '');
-
 
           try {
               const res = await fetch(`/api/proteins/${date}?page=${currentPage}`);
@@ -57,13 +53,17 @@
                   content.forEach((item) => {
                     const itemHTML = `
                       <div class="protein-item" data-id="${item.id}">
-                        <div class="flex items-center gap-2">
-                          <p class="text-sm font-medium text-gray-800 truncate">${item.name}</p>
-                          <span class="text-xs text-gray-500 whitespace-nowrap">${item.intake}g</span>
+                        <div class="flex-1">
+                          <p class="text-sm font-medium text-gray-800 break-words">${item.name}</p>
+                          <div class="flex gap-4 text-xs text-gray-500 mt-1">
+                            <span class="w-7">${item.intake}g</span>
+                            <span>${COMMON.formatTime(item.intakeAt)}</span>
+                            <input type="hidden" value="${item.intakeAt}">
+                          </div>
                         </div>
-                        <div class="flex gap-2 text-lg text-gray-700">
-                          <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${item.id}, true)">✏️</button>
-                          <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${item.id})">🗑️</button>
+                        <div class="flex gap-2 text-lg text-gray-700 ml-4">
+                          <button title="수정" class="hover:opacity-70" onclick="toggleEditMode(${item.id}, true)">✏️</button>
+                          <button title="삭제" class="hover:opacity-70" onclick="deleteProtein(${item.id})">🗑️</button>
                         </div>
                       </div>
                     `;
@@ -125,31 +125,111 @@
           if (isEdit) {
               itemEl.classList.add('gap-2');
               const name = itemEl.querySelector("p").innerText;
-              const intake = Math.round(parseInt(itemEl.querySelector("span").innerText) * 10) / 10;
+              const intake = Math.round(parseInt(itemEl.querySelectorAll("span")[0].innerText) * 10) / 10;
+              const intakeAt = itemEl.querySelector("input").value;
 
+                /*<input type="text" value="${name}" class="flex-1" placeholder="이름" id="edit-name-${id}" />
+                <input type="number" value="${intake}" class="flex-1" placeholder="섭취량" id="edit-intake-${id}" step="0.1"/>
+                <div class="flex gap-2 text-lg">
+                  <button onclick="saveEdit(${id})" title="확인" class="hover:opacity-80">✅</button>
+                  <button onclick="toggleEditMode(${id}, false)" title="취소" class="hover:opacity-80">❌</button>
+                </div>*/
               itemEl.innerHTML = `
-        <input type="text" value="${name}" class="flex-1" placeholder="이름" id="edit-name-${id}" />
-        <input type="number" value="${intake}" class="flex-1" placeholder="섭취량" id="edit-intake-${id}" step="0.1"/>
-        <div class="flex gap-2 text-lg">
-          <button onclick="saveEdit(${id})" title="확인" class="hover:opacity-80">✅</button>
-          <button onclick="toggleEditMode(${id}, false)" title="취소" class="hover:opacity-80">❌</button>
-        </div>
-      `;
+                <div class="flex flex-col gap-1 w-full pr-3">
+                  <input type="text" value="${name}" placeholder="이름" class="w-full text-sm px-2 py-1 border rounded" id="edit-name-${id}">
+                  <div class="flex gap-2">
+                    <input type="number" value="${intake}" placeholder="섭취량 (g)" class="w-1/2 text-sm px-2 py-1 border rounded" id="edit-intake-${id}" step="0.1">
+                    <input type="text" value="${intakeAt}" placeholder="섭취 시간" class="w-1/2 text-sm px-2 py-1 border rounded" id="edit-intake-at-${id}" readonly>
+                  </div>
+                </div>
+                <div class="flex flex-col items-center gap-2 text-lg text-gray-700 pt-1">
+                  <button onclick="saveEdit(${id})" title="확인" class="hover:opacity-80">✅</button>
+                  <button onclick="toggleEditMode(${id}, false)" title="취소" class="hover:opacity-80">❌</button>
+                </div>
+              `;
+
+              flatpickr(`#edit-intake-at-${id}`, {
+                  enableTime: true,
+                  noCalendar: true,
+                  dateFormat: "h:i K",
+                  time_24hr: false,
+                  defaultDate: new Date(intakeAt),
+                  maxDate: new Date(),
+                  disableMobile: "true",
+                  formatDate: (dateObj, formatStr, locale) => {
+                      const hours = dateObj.getHours();
+                      const minutes = dateObj.getMinutes();
+                      const isPM = hours >= 12;
+                      const hour12 = hours % 12 || 12;
+                      const pad = (n) => n.toString().padStart(2, "0");
+                      return `${pad(hour12)}:${pad(minutes)} ${isPM ? "PM" : "AM"}`;
+                  }
+              });
           } else {
               itemEl.classList.remove('gap-2');
               const name = document.getElementById(`edit-name-${id}`).value;
               const intake = document.getElementById(`edit-intake-${id}`).value;
+              const intakeAt = document.getElementById(`edit-intake-at-${id}`).getAttribute('value'); // raw text
 
               itemEl.innerHTML = `
-        <div class="flex items-center gap-2">
-          <p class="text-sm font-medium text-gray-800 truncate">${name}</p>
-          <span class="text-xs text-gray-500 whitespace-nowrap">${intake}g</span>
-        </div>
-        <div class="flex gap-2 text-lg text-gray-700">
-          <button title="수정" class="edit-btn hover:opacity-70" onclick="toggleEditMode(${id}, true)">✏️</button>
-          <button title="삭제" class="delete-btn hover:opacity-70" onclick="deleteProtein(${id})">🗑️</button>
-        </div>
-      `;
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800 break-words">${name}</p>
+                  <div class="flex gap-4 text-xs text-gray-500 mt-1">
+                    <span class="w-7">${intake}g</span>
+                    <span>${COMMON.formatTime(intakeAt)}</span>
+                    <input type="hidden" value="${intakeAt}">
+                  </div>
+                </div>
+                <div class="flex gap-2 text-lg text-gray-700 ml-4">
+                  <button title="수정" class="hover:opacity-70" onclick="toggleEditMode(${id}, true)">✏️</button>
+                  <button title="삭제" class="hover:opacity-70" onclick="deleteProtein(${id})">🗑️</button>
+                </div>
+              `
+          }
+      }
+
+      /*
+        단백질 수정
+       */
+      async function saveEdit(id) {
+          const name = document.getElementById(`edit-name-${id}`).value.trim();
+          const intake = Math.round(document.getElementById(`edit-intake-${id}`).value.trim() * 10) / 10;
+          const intakeTime = document.getElementById(`edit-intake-at-${id}`).value;
+
+          if (!name || isNaN(intake) || intake <= 0) {
+              alert("이름과 유효한 섭취량을 입력해주세요.");
+              return;
+          }
+          if (!intakeTime) {
+              alert("섭취 시간을 입력해주세요.");
+              return;
+          }
+
+          let intakeAt = COMMON.parseDateAndTime(COMMON.getTodayDate(), intakeTime);
+          if(isHistoryPage()) {
+              const date = document.getElementById('historyDate').innerText;
+              intakeAt = COMMON.parseDateAndTime(date, intakeTime);
+          }
+
+          try {
+              const res = await fetch(`/api/proteins/${id}`, {
+                  method: "PUT",
+                  headers: {"Content-Type": "application/json"},
+                  body: JSON.stringify({name, intake, intakeAt})
+              });
+
+              if (!res.ok) throw new Error("수정 실패");
+
+              if(isHistoryPage()) {
+                  const date = document.getElementById('historyDate').innerText;
+                  await renderSuccessfulDates();
+                  await renderFirstPage(date);
+              } else {
+                await renderFirstPage();
+              }
+          } catch (err) {
+              console.error(err);
+              alert("수정 중 오류가 발생했습니다.");
           }
       }
 
@@ -157,10 +237,10 @@
           return window.location.href.indexOf('history') > -1;
       }
 
-      async function renderFirstPage() {
+      async function renderFirstPage(date) {
           currentPage = 0;
           isLastPage = false;
-          await renderNextPage();
+          await renderNextPage(date);
       }
 
       window.addEventListener("DOMContentLoaded", () => {
