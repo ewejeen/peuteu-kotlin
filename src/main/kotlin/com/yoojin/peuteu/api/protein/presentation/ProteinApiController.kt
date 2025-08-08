@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RequestMapping("/api")
 @RestController
@@ -16,9 +17,16 @@ class ProteinApiController(
     private val proteinCommandService: ProteinCommandService,
     private val proteinQueryService: ProteinQueryService
 ) {
+    // 단백질 섭취 성공한 날짜 조회
     @GetMapping("/proteins/successful-dates")
     fun findSuccessfulDatesInMonth(year: Int, month: Int): List<String> {
         return proteinQueryService.findSuccessfulDatesInMonth(year, month)
+    }
+
+    // 단백질 섭취 정보 있는 날짜 조회
+    @GetMapping("/proteins/recorded-dates")
+    fun findRecordedDatesInMonth(year: Int, month: Int): List<Date> {
+        return proteinQueryService.findRecordedDatesInMonth(year, month)
     }
 
     @PostMapping("/proteins")

@@ -13,6 +13,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Date
 
 @Repository
 class ProteinRepository(
@@ -33,6 +34,10 @@ class ProteinRepository(
 
     fun findSuccessfulDatesInMonth(year: Int, month: Int): List<ProteinSuccessfulDates> {
         return proteinMyBatisRepository.findSuccessfulDatesInMonth(year, month)
+    }
+
+    fun findRecordedDatesInMonth(year: Int, month: Int): List<Date> {
+        return proteinJpaRepository.findRecordedDatesInMonth(year, month)
     }
 
     fun findProteinDailyTotal(startDate: LocalDate, endDate: LocalDate): List<DailyProteinTotal> {

@@ -10,6 +10,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
+import java.util.Date
 
 @Service
 class ProteinQueryService(
@@ -58,6 +59,11 @@ class ProteinQueryService(
             .filter { it.total >= it.target }
             .map { it.date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) }
             .toList()
+    }
+
+    // 해당 월의 프로틴 섭취 일자 조회
+    fun findRecordedDatesInMonth(year: Int, month: Int): List<Date> {
+        return proteinRepository.findRecordedDatesInMonth(year, month)
     }
 
     private fun parseDate(date: String): List<LocalDateTime> {

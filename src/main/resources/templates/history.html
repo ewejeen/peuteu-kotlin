@@ -116,7 +116,7 @@
 
   <!-- 달력 컨트롤 헤더 -->
   <div class="flex items-center justify-between mb-3 px-1">
-    <!-- ← 이전달 -->
+    <!-- 이전달 -->
     <button id="prevMonthBtn"
             class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-blue-600 border border-gray-300 transition"
             title="이전달">
@@ -130,8 +130,11 @@
     <h3 id="calendarTitle" class="text-gray-800 font-semibold text-lg">
       2025년 07월
     </h3>
+    <!--<button id="todayBtn" class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
+      오늘
+    </button>-->
 
-    <!-- 다음달 → -->
+    <!-- 다음달 -->
     <button id="nextMonthBtn"
             class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-blue-600 border border-gray-300 transition"
             title="다음달">
@@ -150,33 +153,9 @@
   <!-- 히스토리 리스트 -->
   <div class="mt-4">
     <h3 class="text-blue-500 font-semibold mb-2 mt-2"><span id="historyDate"></span>의 히스토리</h3>
-    <!--<div class="space-y-2 protein-list" id="historyList">
-      &lt;!&ndash; 아이템이 동적으로 삽입될 영역 &ndash;&gt;
-    </div>-->
   </div>
   <div th:replace="~{component/protein-history :: proteinHistory}"></div>
 <!--  <div th:replace="~{component/protein-register :: proteinRegister}"></div>-->
-
-  <!-- 항목 추가 폼 -->
-  <!--<div class="mt-6">
-    <form id="historyForm" class="protein-submit-form">
-      <div class="flex items-end gap-2">
-        <div class="flex-1">
-          <label for="historyName" class="label-submit">이름</label>
-          <input type="text" id="historyName" placeholder="예: 단백질 바" class="input-submit" required />
-        </div>
-        <div class="w-24">
-          <label for="historyIntake" class="label-submit">섭취량 (g)</label>
-          <input type="number" id="historyIntake" placeholder="20" class="input-submit" required />
-        </div>
-        <div>
-          <button type="submit" class="btn-submit hover:bg-blue-600 transition">
-            추가
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>-->
 </th:block>
 
 <script layout:fragment="script">
@@ -190,21 +169,35 @@
   }
 
   /*
-    단백질 총섭취량 조회
+    단백질 섭취일 및 성공일 조회
    */
-  async function renderSuccessfulDates() {
+  async function renderDatesInfo(view) {
       calendar.removeAllEvents();
-      const date = COMMON.getTodayYearAndMonth();
+
+      const date = view.currentStart;
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
 
       try {
-          const res = await fetch(`/api/proteins/successful-dates?year=${date.year}&month=${date.month}`);
-          if (!res.ok) throw new Error("섭취량 조회 실패");
+          const recordedRes = await fetch(`/api/proteins/recorded-dates?year=${year}&month=${month}`);
+          if (!recordedRes.ok) throw new Error("섭취일 조회 실패");
 
-          const data = await res.json();
-          const successCount = data.data.length;
+          const successRes = await fetch(`/api/proteins/successful-dates?year=${year}&month=${month}`);
+          if (!successRes.ok) throw new Error("섭취 성공일 조회 실패");
 
-          data.data.forEach(d => {
-              const exists = calendar.getEvents().some(e => e.startStr === d);
+          const recordedData = await recordedRes.json();
+          const successData = await successRes.json();
+          const successCount = successData.data.length;
+
+          recordedData.data.forEach(d => {
+              const exists = calendar.getEvents().some(e => e.startStr === d && e.title === 'o');
+              if (!exists) {
+                  calendar.addEvent({title: 'o', start: `${d}`})
+              }
+          });
+
+          successData.data.forEach(d => {
+              const exists = calendar.getEvents().some(e => e.startStr === d && e.title === '💪');
               if (!exists) {
                   calendar.addEvent({title: '💪', start: `${d}`})
               }
@@ -213,20 +206,6 @@
       } catch (err) {
           console.error(err);
       }
-  }
-
-  function removeEmptyLastRow() {
-      const calendarEl = document.getElementById('calendar');
-      const rows = calendarEl.querySelectorAll('.fc-daygrid-body tr');
-
-      rows.forEach((row) => {
-          const allOtherMonth = [...row.querySelectorAll('.fc-daygrid-day')]
-              .every(cell => cell.classList.contains('fc-day-other'));
-
-          if (allOtherMonth) {
-              row.style.display = 'none'; // 의미 없는 줄 숨김
-          }
-      });
   }
 
   function updateCalendarTitle(view) {
@@ -249,13 +228,9 @@
         selectable: true,
         headerToolbar: false,
         height: 'auto',
-        // events: [
-        //     { title: '💪', start: '2025-07-20' },
-        //     { title: '💪', start: '2025-07-03' },
-        //     { title: '💪', start: '2025-07-05' },
-        // ],
+        fixedWeekCount: false,
         dateClick: function (info) {
-            // 선택 이벤트는 위의 selectedCell 강조 참고
+            // 날짜 클릭 시 히스토리 조회
             renderHistory(info.dateStr);
             if (selectedCell) selectedCell.classList.remove('selected-day');
             selectedCell = info.dayEl;
@@ -269,8 +244,7 @@
             return { domNodes: [document.createTextNode(arg.date.getDate())] };
         },
         datesSet: function (arg) {
-            removeEmptyLastRow(); // 렌더 직후 호출
-            renderSuccessfulDates();
+            renderDatesInfo(arg.view);
             updateCalendarTitle(arg.view);
         },
         eventDidMount: function(info) {
@@ -288,12 +262,8 @@
 
     });
     calendar.render();
-    /*
-    calendar.addEvent({
-      title: '단백질 보충 완료 💪',
-      start: '2025-07-26'
-    });
-     */
+
+
     renderHistory(COMMON.getTodayDate());
   });
 </script>
