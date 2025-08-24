@@ -76,7 +76,7 @@
     단백질 달성률 링 업데이트
    */
   function updateProgress(currentValue) {
-    const goal = 120; // TODO
+    const goal = TARGET;
     const percent = Math.min((currentValue / goal) * 100, 100);
     const circleLength = 2 * Math.PI * 45;
     const offset = circleLength * (1 - percent / 100);
@@ -126,11 +126,33 @@
     목표 텍스트 세팅
    */
   function setGoal() {
-      const goal = 120;
-      document.getElementById("goalText").innerText = `/${goal}g`;
+      const goal = TARGET;
+      if (goal) {
+        document.getElementById("goalText").innerText = `/${goal}g`;
+      } else {
+        document.getElementById("goalText").innerText = '';
+      }
   }
 
-  window.addEventListener("DOMContentLoaded", () => {
+  /*
+    단백질 섭취량 조회
+  */
+  async function renderProteinTarget() {
+      try {
+          const res = await fetch(`/api/protein-targets`);
+          if (!res.ok) throw new Error("섭취량 조회 실패");
+
+          const data = await res.json();
+          return data.data;
+      } catch (err) {
+          console.error(err);
+          return null;
+      }
+  }
+
+  let TARGET
+  window.addEventListener("DOMContentLoaded", async () => {
+    TARGET = await renderProteinTarget();
     setToday();
     setGoal();
   });
